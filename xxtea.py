@@ -111,5 +111,21 @@ def decrypt_file(src_file, key, target_file=None, sign=""):
         return True
     return False
 
+def encrypt_file(src_file, key, target_file=None, sign=""):
+    with open(src_file, "rb") as file_obj:
+        cipher_text = file_obj.read()
+
+        plain_text = encrypt(cipher_text, key)
+
+        if len(plain_text) == 0 and len(cipher_text) > 0:
+            return False
+        if target_file:
+            with open(target_file, "w") as write_obj:
+                write_obj.write(sign)
+                write_obj.write(plain_text)
+                write_obj.close()
+        return True
+    return False
+
 if __name__ == "__main__":  
     print decrypt(encrypt('Hello XXTEA!', '16bytelongstring'), '16bytelongstring')  

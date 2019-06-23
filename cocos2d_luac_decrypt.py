@@ -56,6 +56,13 @@ def decrypt_dir(dir, sign, key):
                 xxtea.decrypt_file(src_file=os.path.join(
                     root, f), key=key, target_file=os.path.join(root, f), sign=sign)
 
+def encrypt_dir(dir, sign, key):
+    for root, dirs, files in os.walk(dir):
+        for f in files:
+            if os.path.splitext(f)[-1] == ".luac":
+                xxtea.encrypt_file(src_file=os.path.join(
+                    root, f), key=key, target_file=os.path.join(root, f), sign=sign)
+
 
 def get_key_contain(so_path, sign):
     may_contain = None
@@ -126,14 +133,15 @@ def guess_sign(luacFiles):
 
 def main():
     parser = argparse.ArgumentParser(
-        add_help=True, description="cocos2d luac decrypt tool",
+        add_help=True, description="cocos2d luac decrypt & encrypt tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 example:
     {prog} -f 1.apk -o output                       # Y auto parse apk
     {prog} -f 1.apk -s aaaaaaa -k bbbbbbb           # Y
     {prog} -f 1.apk -o output -s aaaaaaa -k bbbbbbb # Y
-    {prog} -d dir -s aaaaaaa -k bbbbbbb             # Y""".format(prog=sys.argv[0]))
+    {prog} -d dir -s aaaaaaa -k bbbbbbb             # Y
+    {prog} -d dir -s aaaaaaa -k bbbbbbb -e         # encrypt lua""".format(prog=sys.argv[0]))
     parser.add_argument('-f', dest="apkFile",
                         help='apk file')
     parser.add_argument('-o', dest="output", default="output",
@@ -144,10 +152,15 @@ example:
                         help="xxtea sign")
     parser.add_argument('-k', dest="key", default="",
                         help="xxtea key")
+    parser.add_argument('-e', dest="encrypt", action="store_true",
+                        help="encrypt")
     args = parser.parse_args()
     import pprint
+
     if args.sign and args.key and args.apkFile:
         extract_apk(args.apkFile, args.output, sign=args.sign, key=args.key)
+    elif args.sign and args.key and args.dir and args.encrypt:
+        pprint.pprint(encrypt_dir(args.dir, args.sign, args.key))
     elif args.sign and args.key and args.dir:
         pprint.pprint(decrypt_dir(args.dir, args.sign, args.key))
     elif args.apkFile and (args.sign == ''):
